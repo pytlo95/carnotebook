@@ -1,0 +1,726 @@
+<!-- PWA Meta Tags -->
+<meta name="theme-color" content="#3b82f6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CarNotebook">
+
+<!-- PWA Icons -->
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    .ios-screen {
+        width: 100%;
+        max-width: 375px;
+        height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
+        position: relative;
+        overflow: hidden;
+        margin: 0 auto;
+    }
+    
+    .screen-content {
+        background: #f8f9fa;
+        border-radius: 0;
+        height: 100%;
+        overflow-y: auto;
+        position: relative;
+    }
+    
+    .status-bar {
+        height: 44px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+        font-size: 14px;
+        font-weight: 600;
+        background: rgba(0,0,0,0.1);
+        color: white;
+    }
+    
+    .nav-bar {
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        border-bottom: 1px solid #e5e7eb;
+        background: white;
+    }
+    
+    .car-item {
+        background: white;
+        margin: 10px 20px;
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    
+    .car-item:hover {
+        transform: translateY(-2px);
+    }
+    
+    .form-field {
+        margin: 15px 20px;
+    }
+    
+    .form-field label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #374151;
+    }
+    
+    .form-field input, .form-field select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 16px;
+    }
+    
+    .btn-primary {
+        background: #3b82f6;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    
+    .btn-primary:hover {
+        background: #2563eb;
+    }
+    
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        margin-left: 10px;
+    }
+    
+    .days-warning {
+        color: #ef4444;
+        font-weight: 600;
+    }
+    
+    .days-ok {
+        color: #10b981;
+        font-weight: 600;
+    }
+    
+    .calculator-section {
+        background: #f3f4f6;
+        margin: 20px;
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+    /* PWA Install Button */
+    .install-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #10b981;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 15px 20px;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 1000;
+        display: none;
+    }
+</style>
+<div class="ios-screen">
+    <div class="screen-content">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span id="currentTime">9:41</span>
+            <span>📶 📶 📶 🔋</span>
+        </div>
+        
+        <!-- Screen 1: Home Screen -->
+        <div id="homeScreen" class="screen">
+            <div class="nav-bar">
+                <button class="btn-secondary" onclick="toggleThemeMenu()">🎨</button>
+                <h1 class="text-xl font-bold">🚗 CarNotebook</h1>
+                <button class="btn-primary" onclick="showAddCarScreen()">+ Dodaj</button>
+            </div>
+            
+            <!-- Theme Menu -->
+            <div id="themeMenu" class="hidden bg-white mx-4 mt-2 p-4 rounded-lg shadow-lg">
+                <h3 class="font-bold mb-3">Wybierz motyw kolorowy:</h3>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="setTheme('blue')" class="theme-btn bg-blue-500 text-white p-2 rounded">Niebieski</button>
+                    <button onclick="setTheme('green')" class="theme-btn bg-green-500 text-white p-2 rounded">Zielony</button>
+                    <button onclick="setTheme('purple')" class="theme-btn bg-purple-500 text-white p-2 rounded">Fioletowy</button>
+                    <button onclick="setTheme('red')" class="theme-btn bg-red-500 text-white p-2 rounded">Czerwony</button>
+                    <button onclick="setTheme('orange')" class="theme-btn bg-orange-500 text-white p-2 rounded">Pomarańczowy</button>
+                    <button onclick="setTheme('pink')" class="theme-btn bg-pink-500 text-white p-2 rounded">Różowy</button>
+                </div>
+            </div>
+            
+            <div id="carsList" class="pb-20">
+                <!-- Cars will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Screen 2: Add/Edit Car Form -->
+        <div id="addCarScreen" class="screen hidden">
+            <div class="nav-bar">
+                <button class="btn-secondary" onclick="showHomeScreen()">Anuluj</button>
+                <h1 class="text-lg font-bold" id="formTitle">Dodaj samochód</h1>
+                <button class="btn-primary" onclick="saveCar()">Zapisz</button>
+            </div>
+            
+            <div class="pb-20">
+                <div class="form-field">
+                    <label>Marka</label>
+                    <input type="text" id="brand" placeholder="np. Toyota">
+                </div>
+                
+                <div class="form-field">
+                    <label>Rok</label>
+                    <input type="number" id="year" placeholder="2020" min="1900" max="2030">
+                </div>
+                
+                <div class="form-field">
+                    <label>Data końca rejestracji</label>
+                    <input type="date" id="registrationEnd">
+                </div>
+                
+                <div class="calculator-section">
+                    <h3 class="font-bold mb-3">💰 Cena pojazdu</h3>
+                    <div class="form-field">
+                        <label>Cena brutto (PLN)</label>
+                        <input type="number" id="priceGross" placeholder="50000" step="0.01" oninput="calculateNet()">
+                    </div>
+                    
+                    <div class="form-field">
+                        <label>Cena netto (PLN)</label>
+                        <input type="number" id="priceNet" placeholder="40650" step="0.01" oninput="calculateGross()">
+                    </div>
+                    
+                    <div class="text-sm text-gray-600 mt-2">
+                        VAT 23%: <span id="vatAmount">0</span> PLN
+                    </div>
+                </div>
+                
+                <div class="form-field">
+                    <label>Numer rejestracyjny</label>
+                    <input type="text" id="plateNumber" placeholder="WA 12345">
+                </div>
+                
+                <div class="form-field">
+                    <label>VIN</label>
+                    <input type="text" id="vin" placeholder="1HGBH41JXMN109186">
+                </div>
+                
+                <div class="form-field">
+                    <label>Data końca OC</label>
+                    <input type="date" id="insuranceEnd">
+                </div>
+                
+                <!-- Costs Calculator Section -->
+                <div class="calculator-section">
+                    <h3 class="font-bold mb-3">🔧 Kalkulator kosztów</h3>
+                    
+                    <div class="mb-4">
+                        <div class="flex gap-2 mb-2">
+                            <input type="text" id="costDescription" placeholder="Opis kosztu (np. naprawa)" class="flex-1 p-2 border rounded">
+                            <input type="number" id="costAmount" placeholder="Kwota" class="w-24 p-2 border rounded" step="0.01">
+                            <button onclick="addCost()" class="btn-primary px-3">+</button>
+                        </div>
+                    </div>
+                    
+                    <div id="costsList" class="mb-4">
+                        <!-- Costs will be listed here -->
+                    </div>
+                    
+                    <div class="border-t pt-4">
+                        <div class="form-field">
+                            <label>Sprzedany za (PLN)</label>
+                            <input type="number" id="soldPrice" placeholder="0" step="0.01" oninput="calculateProfit()">
+                        </div>
+                        
+                        <div class="bg-gray-100 p-3 rounded mt-3">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Cena zakupu:</span>
+                                <span id="purchasePriceDisplay">0 PLN</span>
+                            </div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Suma kosztów:</span>
+                                <span id="totalCostsDisplay">0 PLN</span>
+                            </div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Cena sprzedaży:</span>
+                                <span id="soldPriceDisplay">0 PLN</span>
+                            </div>
+                            <hr class="my-2">
+                            <div class="flex justify-between font-bold">
+                                <span>Zysk/Strata:</span>
+                                <span id="profitDisplay" class="text-green-600">0 PLN</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Screen 3: Car Details -->
+        <div id="detailsScreen" class="screen hidden">
+            <div class="nav-bar">
+                <button class="btn-secondary" onclick="showHomeScreen()">← Powrót</button>
+                <h1 class="text-lg font-bold">Szczegóły</h1>
+                <button class="btn-primary" onclick="editCar()">Edytuj</button>
+            </div>
+            
+            <div id="carDetails" class="p-20 pb-20">
+                <!-- Car details will be populated here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then((registration) => {
+                    console.log('SW registered: ', registration);
+                })
+                .catch((registrationError) => {
+                    console.log('SW registration failed: ', registrationError);
+                });
+        });
+    }
+
+    // PWA Install Prompt
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.style.display = 'block';
+    });
+
+    installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            installBtn.style.display = 'none';
+        }
+    });
+
+    // Update time in status bar
+    function updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('pl-PL', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        document.getElementById('currentTime').textContent = timeString;
+    }
+    
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // Data storage using localStorage (simulating Core Data/UserDefaults)
+    let cars = JSON.parse(localStorage.getItem('cars')) || [];
+    let currentEditingIndex = -1;
+    let currentTheme = localStorage.getItem('theme') || 'blue';
+    let currentCosts = [];
+
+    // Initialize app
+    document.addEventListener('DOMContentLoaded', function() {
+        applyTheme(currentTheme);
+        showHomeScreen();
+    });
+
+    // Theme functions
+    function toggleThemeMenu() {
+        const menu = document.getElementById('themeMenu');
+        menu.classList.toggle('hidden');
+    }
+
+    function setTheme(theme) {
+        currentTheme = theme;
+        localStorage.setItem('theme', theme);
+        applyTheme(theme);
+        document.getElementById('themeMenu').classList.add('hidden');
+    }
+
+    function applyTheme(theme) {
+        const themeColors = {
+            blue: { primary: '#3b82f6', secondary: '#2563eb', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+            green: { primary: '#10b981', secondary: '#059669', gradient: 'linear-gradient(135deg, #34d399 0%, #059669 100%)' },
+            purple: { primary: '#8b5cf6', secondary: '#7c3aed', gradient: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)' },
+            red: { primary: '#ef4444', secondary: '#dc2626', gradient: 'linear-gradient(135deg, #f87171 0%, #dc2626 100%)' },
+            orange: { primary: '#f97316', secondary: '#ea580c', gradient: 'linear-gradient(135deg, #fb923c 0%, #ea580c 100%)' },
+            pink: { primary: '#ec4899', secondary: '#db2777', gradient: 'linear-gradient(135deg, #f472b6 0%, #db2777 100%)' }
+        };
+
+        const colors = themeColors[theme];
+        document.querySelector('.ios-screen').style.background = colors.gradient;
+        
+        // Update all primary buttons
+        document.querySelectorAll('.btn-primary').forEach(btn => {
+            btn.style.backgroundColor = colors.primary;
+        });
+    }
+
+    // Screen navigation
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.add('hidden');
+        });
+        document.getElementById(screenId).classList.remove('hidden');
+    }
+
+    function showHomeScreen() {
+        showScreen('homeScreen');
+        renderCarsList();
+        currentEditingIndex = -1;
+    }
+
+    function showAddCarScreen() {
+        showScreen('addCarScreen');
+        document.getElementById('formTitle').textContent = 'Dodaj samochód';
+        clearForm();
+        currentEditingIndex = -1;
+    }
+
+    function showDetailsScreen(index) {
+        showScreen('detailsScreen');
+        renderCarDetails(index);
+        currentEditingIndex = index;
+    }
+
+    // Car management functions
+    function saveCar() {
+        const car = {
+            brand: document.getElementById('brand').value,
+            year: parseInt(document.getElementById('year').value),
+            registrationEnd: document.getElementById('registrationEnd').value,
+            priceGross: parseFloat(document.getElementById('priceGross').value) || 0,
+            priceNet: parseFloat(document.getElementById('priceNet').value) || 0,
+            plateNumber: document.getElementById('plateNumber').value,
+            vin: document.getElementById('vin').value,
+            insuranceEnd: document.getElementById('insuranceEnd').value,
+            costs: [...currentCosts],
+            soldPrice: parseFloat(document.getElementById('soldPrice').value) || 0,
+            id: currentEditingIndex >= 0 ? cars[currentEditingIndex].id : Date.now()
+        };
+
+        if (!car.brand || !car.year) {
+            alert('Proszę wypełnić markę i rok pojazdu');
+            return;
+        }
+
+        if (currentEditingIndex >= 0) {
+            cars[currentEditingIndex] = car;
+        } else {
+            cars.push(car);
+        }
+
+        localStorage.setItem('cars', JSON.stringify(cars));
+        showHomeScreen();
+    }
+
+    function editCar() {
+        if (currentEditingIndex >= 0) {
+            const car = cars[currentEditingIndex];
+            document.getElementById('formTitle').textContent = 'Edytuj samochód';
+            
+            // Fill form with car data
+            document.getElementById('brand').value = car.brand || '';
+            document.getElementById('year').value = car.year || '';
+            document.getElementById('registrationEnd').value = car.registrationEnd || '';
+            document.getElementById('priceGross').value = car.priceGross || '';
+            document.getElementById('priceNet').value = car.priceNet || '';
+            document.getElementById('plateNumber').value = car.plateNumber || '';
+            document.getElementById('vin').value = car.vin || '';
+            document.getElementById('insuranceEnd').value = car.insuranceEnd || '';
+            document.getElementById('soldPrice').value = car.soldPrice || '';
+            
+            // Load costs
+            currentCosts = car.costs || [];
+            renderCostsList();
+            
+            calculateVAT();
+            calculateProfit();
+            showScreen('addCarScreen');
+        }
+    }
+
+    function deleteCar(index) {
+        if (confirm('Czy na pewno chcesz usunąć ten samochód?')) {
+            cars.splice(index, 1);
+            localStorage.setItem('cars', JSON.stringify(cars));
+            showHomeScreen();
+        }
+    }
+
+    function clearForm() {
+        document.getElementById('brand').value = '';
+        document.getElementById('year').value = '';
+        document.getElementById('registrationEnd').value = '';
+        document.getElementById('priceGross').value = '';
+        document.getElementById('priceNet').value = '';
+        document.getElementById('plateNumber').value = '';
+        document.getElementById('vin').value = '';
+        document.getElementById('insuranceEnd').value = '';
+        document.getElementById('soldPrice').value = '';
+        document.getElementById('costDescription').value = '';
+        document.getElementById('costAmount').value = '';
+        document.getElementById('vatAmount').textContent = '0';
+        currentCosts = [];
+        renderCostsList();
+        calculateProfit();
+    }
+
+    // Price calculation functions
+    function calculateNet() {
+        const gross = parseFloat(document.getElementById('priceGross').value) || 0;
+        const net = gross / 1.23;
+        document.getElementById('priceNet').value = net.toFixed(2);
+        calculateVAT();
+    }
+
+    function calculateGross() {
+        const net = parseFloat(document.getElementById('priceNet').value) || 0;
+        const gross = net * 1.23;
+        document.getElementById('priceGross').value = gross.toFixed(2);
+        calculateVAT();
+    }
+
+    function calculateVAT() {
+        const gross = parseFloat(document.getElementById('priceGross').value) || 0;
+        const net = parseFloat(document.getElementById('priceNet').value) || 0;
+        const vat = gross - net;
+        document.getElementById('vatAmount').textContent = vat.toFixed(2);
+        calculateProfit();
+    }
+
+    // Cost management functions
+    function addCost() {
+        const description = document.getElementById('costDescription').value.trim();
+        const amount = parseFloat(document.getElementById('costAmount').value);
+        
+        if (!description || !amount || amount <= 0) {
+            alert('Proszę podać opis i kwotę kosztu');
+            return;
+        }
+        
+        currentCosts.push({
+            id: Date.now(),
+            description: description,
+            amount: amount
+        });
+        
+        document.getElementById('costDescription').value = '';
+        document.getElementById('costAmount').value = '';
+        
+        renderCostsList();
+        calculateProfit();
+    }
+
+    function removeCost(costId) {
+        currentCosts = currentCosts.filter(cost => cost.id !== costId);
+        renderCostsList();
+        calculateProfit();
+    }
+
+    function renderCostsList() {
+        const costsList = document.getElementById('costsList');
+        
+        if (currentCosts.length === 0) {
+            costsList.innerHTML = '<div class="text-gray-500 text-sm">Brak dodanych kosztów</div>';
+            return;
+        }
+        
+        costsList.innerHTML = currentCosts.map(cost => `
+            <div class="flex justify-between items-center bg-white p-2 rounded mb-2">
+                <div>
+                    <span class="font-medium">${cost.description}</span>
+                    <span class="text-gray-600 ml-2">${cost.amount.toFixed(2)} PLN</span>
+                </div>
+                <button onclick="removeCost(${cost.id})" class="text-red-500 text-sm">🗑️</button>
+            </div>
+        `).join('');
+    }
+
+    function calculateProfit() {
+        const purchasePrice = parseFloat(document.getElementById('priceGross').value) || 0;
+        const soldPrice = parseFloat(document.getElementById('soldPrice').value) || 0;
+        const totalCosts = currentCosts.reduce((sum, cost) => sum + cost.amount, 0);
+        const profit = soldPrice - purchasePrice - totalCosts;
+        
+        document.getElementById('purchasePriceDisplay').textContent = purchasePrice.toFixed(2) + ' PLN';
+        document.getElementById('totalCostsDisplay').textContent = totalCosts.toFixed(2) + ' PLN';
+        document.getElementById('soldPriceDisplay').textContent = soldPrice.toFixed(2) + ' PLN';
+        
+        const profitDisplay = document.getElementById('profitDisplay');
+        profitDisplay.textContent = profit.toFixed(2) + ' PLN';
+        
+        if (profit > 0) {
+            profitDisplay.className = 'text-green-600';
+        } else if (profit < 0) {
+            profitDisplay.className = 'text-red-600';
+        } else {
+            profitDisplay.className = 'text-gray-600';
+        }
+    }
+
+    // Date calculation functions
+    function calculateDaysToExpiry(dateString) {
+        if (!dateString) return null;
+        const today = new Date();
+        const expiryDate = new Date(dateString);
+        const diffTime = expiryDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays;
+    }
+
+    function formatDaysToExpiry(days) {
+        if (days === null) return '';
+        if (days < 0) return `Wygasła ${Math.abs(days)} dni temu`;
+        if (days === 0) return 'Wygasa dziś!';
+        if (days <= 30) return `Wygasa za ${days} dni`;
+        return `Wygasa za ${days} dni`;
+    }
+
+    function getDaysClass(days) {
+        if (days === null) return '';
+        if (days <= 30) return 'days-warning';
+        return 'days-ok';
+    }
+
+    // Rendering functions
+    function renderCarsList() {
+        const carsList = document.getElementById('carsList');
+        
+        if (cars.length === 0) {
+            carsList.innerHTML = `
+                <div class="text-center p-20">
+                    <div class="text-6xl mb-4">🚗</div>
+                    <h3 class="text-lg font-bold mb-2">Brak samochodów</h3>
+                    <p class="text-gray-600">Dodaj swój pierwszy samochód, aby rozpocząć</p>
+                </div>
+            `;
+            return;
+        }
+
+        carsList.innerHTML = cars.map((car, index) => {
+            const regDays = calculateDaysToExpiry(car.registrationEnd);
+            const ocDays = calculateDaysToExpiry(car.insuranceEnd);
+            
+            return `
+                <div class="car-item" onclick="showDetailsScreen(${index})">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h3 class="font-bold text-lg">${car.brand} ${car.year}</h3>
+                            <p class="text-gray-600">${car.plateNumber || 'Brak numeru'}</p>
+                        </div>
+                        <button onclick="event.stopPropagation(); deleteCar(${index})" class="text-red-500 text-xl">🗑️</button>
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <div class="text-sm ${getDaysClass(regDays)}">
+                            📋 Rejestracja: ${formatDaysToExpiry(regDays) || 'Brak daty'}
+                        </div>
+                        <div class="text-sm ${getDaysClass(ocDays)}">
+                            🛡️ OC: ${formatDaysToExpiry(ocDays) || 'Brak daty'}
+                        </div>
+                    </div>
+                    
+                    ${car.priceGross ? `<div class="text-sm text-gray-600 mt-2">💰 ${car.priceGross.toLocaleString()} PLN brutto</div>` : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderCarDetails(index) {
+        const car = cars[index];
+        const regDays = calculateDaysToExpiry(car.registrationEnd);
+        const ocDays = calculateDaysToExpiry(car.insuranceEnd);
+        
+        document.getElementById('carDetails').innerHTML = `
+            <div class="space-y-6">
+                <div class="text-center">
+                    <div class="text-6xl mb-4">🚗</div>
+                    <h2 class="text-2xl font-bold">${car.brand} ${car.year}</h2>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="bg-white p-4 rounded-lg">
+                        <h3 class="font-bold mb-2">📋 Dokumenty</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span>Numer rejestracyjny:</span>
+                                <span class="font-mono">${car.plateNumber || 'Brak'}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>VIN:</span>
+                                <span class="font-mono text-xs">${car.vin || 'Brak'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg">
+                        <h3 class="font-bold mb-2">📅 Ważność dokumentów</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span>Rejestracja:</span>
+                                <span class="${getDaysClass(regDays)}">${formatDaysToExpiry(regDays) || 'Brak daty'}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>OC:</span>
+                                <span class="${getDaysClass(ocDays)}">${formatDaysToExpiry(ocDays) || 'Brak daty'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${car.priceGross || car.priceNet ? `
+                    <div class="bg-white p-4 rounded-lg">
+                        <h3 class="font-bold mb-2">💰 Finanse</h3>
+                        <div class="space-y-2 text-sm">
+                            ${car.priceGross ? `<div class="flex justify-between"><span>Cena zakupu:</span><span class="font-bold">${car.priceGross.toLocaleString()} PLN</span></div>` : ''}
+                            ${car.costs && car.costs.length > 0 ? `<div class="flex justify-between"><span>Suma kosztów:</span><span>${car.costs.reduce((sum, cost) => sum + cost.amount, 0).toFixed(2)} PLN</span></div>` : ''}
+                            ${car.soldPrice ? `<div class="flex justify-between"><span>Cena sprzedaży:</span><span class="font-bold text-blue-600">${car.soldPrice.toLocaleString()} PLN</span></div>` : ''}
+                            ${car.soldPrice && car.priceGross ? `<div class="flex justify-between border-t pt-2 mt-2"><span class="font-bold">Zysk/Strata:</span><span class="font-bold ${(car.soldPrice - car.priceGross - (car.costs ? car.costs.reduce((sum, cost) => sum + cost.amount, 0) : 0)) >= 0 ? 'text-green-600' : 'text-red-600'}">${(car.soldPrice - car.priceGross - (car.costs ? car.costs.reduce((sum, cost) => sum + cost.amount, 0) : 0)).toFixed(2)} PLN</span></div>` : ''}
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${car.costs && car.costs.length > 0 ? `
+                    <div class="bg-white p-4 rounded-lg">
+                        <h3 class="font-bold mb-2">🔧 Koszty dodatkowe</h3>
+                        <div class="space-y-1 text-sm">
+                            ${car.costs.map(cost => `<div class="flex justify-between"><span>${cost.description}:</span><span>${cost.amount.toFixed(2)} PLN</span></div>`).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+</script>
